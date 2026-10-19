@@ -1,4 +1,3 @@
-$yml = @'
 name: CI
 on:
   pull_request:
@@ -49,5 +48,3 @@ jobs:
           for img in cw-demo:ci cw-healer:ci; do
             docker run --rm -v /var/run/docker.sock:/var/run/docker.sock aquasec/trivy:0.57.1 image --severity CRITICAL --exit-code 1 --ignore-unfixed "$img"
           done
-'@
-[IO.File]::WriteAllText("$PWD\.github\workflows\ci.yml", $yml)
