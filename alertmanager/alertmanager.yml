@@ -1,0 +1,26 @@
+route:
+  receiver: notify
+  group_by: [alertname, container]
+  group_wait: 10s
+  group_interval: 1m
+  repeat_interval: 1h
+
+receivers:
+  - name: notify
+    webhook_configs:                       # ACTIVE: alerts appear on the status page
+      - url: http://healer:8000/webhook
+        send_resolved: true
+
+    # OPTIONAL 1: Discord (Server Settings > Integrations > Webhooks > copy URL)
+    # discord_configs:
+    #   - webhook_url: https://discord.com/api/webhooks/XXXX/YYYY
+    #     send_resolved: true
+
+    # OPTIONAL 2: Gmail (needs a Google App Password)
+    # email_configs:
+    #   - to: you@gmail.com
+    #     from: you@gmail.com
+    #     smarthost: smtp.gmail.com:587
+    #     auth_username: you@gmail.com
+    #     auth_password: YOUR_APP_PASSWORD
+    #     send_resolved: true

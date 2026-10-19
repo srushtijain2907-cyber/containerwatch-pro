@@ -1,0 +1,28 @@
+name: Deploy to EC2
+on:
+  workflow_dispatch:
+  workflow_run:
+    workflows: [CI]
+    branches: [main]
+    types: [completed]
+jobs:
+  deploy:
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.EC2_SSH_KEY }}" > ~/.ssh/key.pem
+          chmod 600 ~/.ssh/key.pem
+          ssh-keyscan -H ${{ secrets.EC2_HOST }} >> ~/.ssh/known_hosts
+      - name: Sync files
+        run: |
+          rsync -az --delete -e "ssh -i ~/.ssh/key.pem" \
+            --exclude .git --exclude terraform --exclude .env \
+            ./ ec2-user@${{ secrets.EC2_HOST }}:/opt/containerwatch/
+      - name: Start stack
+        run: |
+          ssh -i ~/.ssh/key.pem ec2-user@${{ secrets.EC2_HOST }} \
+            "cd /opt/containerwatch && echo 'GRAFANA_ADMIN_PASSWORD=${{ secrets.GRAFANA_ADMIN_PASSWORD }}' > .env && docker compose up -d --build"
