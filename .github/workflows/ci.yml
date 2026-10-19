@@ -1,3 +1,4 @@
+$yml = @'
 name: CI
 on:
   pull_request:
@@ -39,8 +40,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - run: docker build -t cw-demo:ci demo-app && docker build -t cw-healer:ci healer
-      - uses: aquasecurity/trivy-action@0.28.0
-        with: {image-ref: "cw-demo:ci", severity: CRITICAL, exit-code: "1", ignore-unfixed: true}
-      - uses: aquasecurity/trivy-action@0.28.0
-        with: {image-ref: "cw-healer:ci", severity: CRITICAL, exit-code: "1", ignore-unfixed: true}
+      - name: Build images
+        run: |
+          docker build -t cw-demo:ci demo-app
+          docker build -t cw-healer:ci healer
+      - name: Scan images with Trivy
+        run: |
+          for img in cw-demo:ci cw-healer:ci; do
+            docker run --rm -v /var/run/docker.sock:/var/run/docker.sock aquasec/trivy:0.57.1 image --severity CRITICAL --exit-code 1 --ignore-unfixed "$img"
+          done
+'@
+[IO.File]::WriteAllText("$PWD\.github\workflows\ci.yml", $yml)
