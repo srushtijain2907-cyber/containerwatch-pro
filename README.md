@@ -1,4 +1,5 @@
 # 🛡️ ContainerWatch Pro
+![CI](https://github.com/srushtijain2907-cyber/containerwatch-pro/actions/workflows/ci.yml/badge.svg)
 ### A self-healing Docker monitoring platform with chaos testing, log search and AWS deployment
 
 > Containers crash. This project **detects it, fixes it automatically, tells you about it, and proves it with data.**
